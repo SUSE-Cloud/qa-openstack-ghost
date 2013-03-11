@@ -52,7 +52,7 @@ class GhostTestCase(TestCase):
 			'screenshots',
 			'%s.png' % GhostTestCase.testcase_name
 		)
-		print >> sys.stderr, "Saving screenshot to '%s'" % os.path.abspath(out_file)
+		print >> sys.stderr, "---> Saving screenshot to '%s'" % os.path.abspath(out_file)
 		self.ghost.capture_to(out_file)
 
 	def __str__(self):
