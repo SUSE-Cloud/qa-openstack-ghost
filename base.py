@@ -5,12 +5,42 @@ from ghost import Ghost
 import logging
 import sys
 import os
+import subprocess
+
+def exit_error(msg=None):
+	if msg:
+		print >> sys.stderr, "ERROR: %s" % msg
+	sys.exit(2)
+
+def exit_skipped(msg=None):
+	if msg:
+		print >> sys.stderr, "SKIPPED: %s" % msg
+	sys.exit(3)
+
+# Read config
+
+config = {}
+config_file = os.path.join(os.path.dirname(sys.argv[0]), '..', 'config')
+if not os.path.exists(config_file):
+	exit_error("Can't find config in '%s'" % os.path.abspath(config_file))
+command = ['bash', '-c', "source %s && env" % config_file]
+proc = subprocess.Popen(command, stdout = subprocess.PIPE)
+for line in proc.stdout:
+	(key, _, value) = line.partition("=")
+	config[key] = value.strip()
+	if key in ['INSECURE', 'DEBUG', 'VIEW_DISPLAY']:
+		config[key] = bool(int(config[key]))
+	elif key in ['WAIT_TIMEOUT']:
+		config[key] = int(config[key])
+proc.communicate()
+
+# Read config end
 
 class GhostTestCase(TestCase):
-	display = False
-	wait_timeout = 8
+	display = config['VIEW_DISPLAY']
+	wait_timeout = config['WAIT_TIMEOUT']
 	viewport_size = (800, 600)
-	debug_screenshots = False
+	debug_screenshots = config['DEBUG']
 
 	log_level = logging.INFO
 	testcase_name = os.path.basename(sys.argv[0]).replace('.py', '')
@@ -57,13 +87,3 @@ class GhostTestCase(TestCase):
 	def do_finally(self):
 		# to be overwritten
 		pass
-
-def exit_error(msg=None):
-	if msg:
-		print >> sys.stderr, "ERROR: %s" % msg
-	sys.exit(2)
-
-def exit_skipped(msg=None):
-	if msg:
-		print >> sys.stderr, "SKIPPED: %s" % msg
-	sys.exit(3)

@@ -1,0 +1,12 @@
+export INSECURE=0
+
+#kvm/xen-hvm/xen-pv
+export VIRT=kvm
+
+export DEBUG=0
+
+export VIEW_DISPLAY=0
+
+export DASHBOARD_NODE="http://dashboard.cloud.qa.suse.de/"
+
+export WAIT_TIMEOUT=8
