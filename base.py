@@ -1,7 +1,8 @@
 #!/usr/bin/python2
 
 from unittest import TestCase
-from ghost import Ghost
+from ghost import Ghost as BaseGhost
+from ghost.ghost import Logger
 import logging
 import sys
 import os
@@ -36,11 +37,23 @@ proc.communicate()
 
 # Read config end
 
+
+class Ghost(BaseGhost):
+	def _on_manager_ssl_errors(self, reply, errors):
+		url = unicode(reply.url().toString())
+		if self.ignore_ssl_errors:
+			Logger.log('Ignoring invalid SSL certificate: %s' % url, level='info')
+			reply.ignoreSslErrors()
+		else:
+			exit_error('SSL certificate error: %s' % url)
+
+
 class GhostTestCase(TestCase):
 	display = config['VIEW_DISPLAY']
 	wait_timeout = config['WAIT_TIMEOUT']
 	viewport_size = (800, 600)
 	debug_screenshots = config['DEBUG']
+	ignore_ssl_errors = config['INSECURE']
 
 	log_level = logging.INFO
 	testcase_name = os.path.basename(sys.argv[0]).replace('.py', '')
@@ -63,6 +76,7 @@ class GhostTestCase(TestCase):
 			display = GhostTestCase.display,
 			wait_timeout = GhostTestCase.wait_timeout,
 			viewport_size = GhostTestCase.viewport_size,
+			ignore_ssl_errors = GhostTestCase.ignore_ssl_errors,
 			log_level = GhostTestCase.log_level
 		)
 
