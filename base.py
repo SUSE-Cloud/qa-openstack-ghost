@@ -93,10 +93,12 @@ class GhostTestCase(TestCase):
 
 	def runTest(self):
 		try:
-			self.do_testcase()
-			if GhostTestCase.display:
-				# give the user some time to look
-				sleep(1)
+			try:
+				self.do_testcase()
+			finally:
+				if GhostTestCase.display:
+					# give the user some time to look
+					sleep(1)
 			if GhostTestCase.debug_screenshots:
 				self.take_screenshot()
 		except AssertionError:
