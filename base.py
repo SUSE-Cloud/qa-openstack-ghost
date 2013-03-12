@@ -3,10 +3,12 @@
 from unittest import TestCase
 from ghost import Ghost as BaseGhost
 from ghost.ghost import Logger
+from time import sleep as system_sleep
 import logging
 import sys
 import os
 import subprocess
+import re
 
 def exit_error(msg=None):
 	if msg:
@@ -17,6 +19,12 @@ def exit_skipped(msg=None):
 	if msg:
 		print >> sys.stderr, "SKIPPED: %s" % msg
 	sys.exit(3)
+
+def sleep(sec):
+	msec = int(round(sec * 100))
+	for i in range(1, msec):
+		system_sleep(0.01)
+		Ghost._app.processEvents()
 
 # Read config
 
@@ -51,7 +59,7 @@ class Ghost(BaseGhost):
 class GhostTestCase(TestCase):
 	display = config['VIEW_DISPLAY']
 	wait_timeout = config['WAIT_TIMEOUT']
-	viewport_size = (800, 600)
+	viewport_size = (1024, 768)
 	debug_screenshots = config['DEBUG']
 	ignore_ssl_errors = config['INSECURE']
 
@@ -86,6 +94,9 @@ class GhostTestCase(TestCase):
 	def runTest(self):
 		try:
 			self.do_testcase()
+			if GhostTestCase.display:
+				# give the user some time to look
+				sleep(1)
 			if GhostTestCase.debug_screenshots:
 				self.take_screenshot()
 		except AssertionError:
@@ -101,3 +112,19 @@ class GhostTestCase(TestCase):
 	def do_finally(self):
 		# to be overwritten
 		pass
+
+	# helpers
+
+	def help_open(self, path):
+		self.ghost.open(config['DASHBOARD_NODE'] + path)
+
+	def help_login(self, username='admin', password='crowbar'):
+		self.ghost.delete_cookies()
+		self.help_open('')
+		assert 'Log In' in self.ghost.content
+		result, resources = self.ghost.fill("form", {
+			"username": username,
+			"password": password
+		})
+		page, resources = self.ghost.fire_on("form", "submit", expect_loading=True)
+		assert 'Logged in as: ' in self.ghost.content
