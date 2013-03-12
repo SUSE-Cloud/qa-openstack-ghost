@@ -1,0 +1,24 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login()
+		self.ghost.click("a[href*='projects']", expect_loading=True)
+		if not 'test_tenant' in self.ghost.content:
+			exit_skipped("test_tenant not existing")
+		tenant_id = re.search(r">(\w*)</td>[^>]*>test_tenant<", self.ghost.content, re.M).group(1)
+		self.ghost.click("input[name='object_ids'][value='%s']" % tenant_id)
+		assert not self.ghost.exists("button#tenants__action_delete.disabled")
+		self.ghost.click("button#tenants__action_delete")
+		assert "Confirm Delete Projects" in self.ghost.content
+		self.ghost.click("div.modal-footer a.btn", expect_loading=True)
+		assert "Deleted Project: test_tenant" in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()

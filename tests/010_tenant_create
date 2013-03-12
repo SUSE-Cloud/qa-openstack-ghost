@@ -1,0 +1,25 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login()
+		self.ghost.click("a[href*='projects']", expect_loading=True)
+		if 'test_tenant' in self.ghost.content:
+			exit_skipped("test_tenant already existing")
+		self.ghost.click("a#tenants__action_create")
+		self.ghost.wait_for_selector("input[type=submit][value='Create Project']") # ajax loading
+		self.ghost.fill("form#create_tenant_form", {
+			"name": "test_tenant",
+			"description": "Test Tenant to be deleted soon"
+		})
+		self.ghost.fire_on("form#create_tenant_form", "submit", expect_loading=True)
+		assert "test_tenant was successfully created" in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()
