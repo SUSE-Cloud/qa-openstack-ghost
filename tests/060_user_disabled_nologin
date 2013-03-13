@@ -7,7 +7,8 @@ from base import *
 
 class TestCase(GhostTestCase):
 	def do_testcase(self):
-		self.assertRaises(AssertionError, self.help_login, username='test_user', password='crowbar1')
+		with self.assertRaises(AssertionError):
+			self.help_login(username='test_user', password='crowbar1')
 
 if __name__ == '__main__':
 	del GhostTestCase
