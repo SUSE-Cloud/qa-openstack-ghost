@@ -129,4 +129,4 @@ class GhostTestCase(TestCase):
 			"password": password
 		})
 		page, resources = self.ghost.fire_on("form", "submit", expect_loading=True)
-		assert 'Logged in as: ' in self.ghost.content
+		assert 'Logged in as: %s' % username in self.ghost.content
