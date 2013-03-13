@@ -1,0 +1,28 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login()
+		self.ghost.click("a[href*='images']", expect_loading=True)
+		if "jeos1" in self.ghost.content:
+			exit_skipped("jeos1 already existing")
+		glance = get_glance_api(*get_api_auth())
+		image = glance.images.create(
+			name='jeos1',
+			is_public=False,
+			container_format='bare',
+			disk_format='qcow2',
+			properties=get_glance_image_properties(),
+			copy_from='http://clouddata.cloud.suse.de/images/jeos-64.qcow2'
+		)
+		self.ghost.click("a[href*='images']", expect_loading=True)
+		assert "jeos1" in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()

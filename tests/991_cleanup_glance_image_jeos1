@@ -1,0 +1,23 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login()
+		self.ghost.click("a[href*='images']", expect_loading=True)
+		if "jeos1" not in self.ghost.content:
+			exit_skipped("jeos1 not existing")
+		glance = get_glance_api(*get_api_auth())
+		image_id = re.search(r"/([^/]*)/\">jeos1<", self.ghost.content, re.M).group(1)
+		self.ghost.click("button[value='images__delete__%s']" % image_id)
+		assert "Confirm Delete Image" in self.ghost.content
+		self.ghost.click("div.modal-footer a.btn-primary", expect_loading=True)
+		assert "Deleted Image: jeos1" in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()
