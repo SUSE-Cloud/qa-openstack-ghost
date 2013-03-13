@@ -1,14 +1,16 @@
+export WAIT_TIMEOUT=8
+
 export INSECURE=0
 
-#kvm/xen-hvm/xen-pv
+# kvm / xen-hvm / xen-pv
 export VIRT=kvm
 
+# ERROR / WARNING / INFO / DEBUG
+export LOG_LEVEL=INFO
 export DEBUG=0
-
 export VIEW_DISPLAY=0
 
 # dashboard url WITHOUT trailing slash
 export DASHBOARD_NODE="http://dashboard.cloud.qa.suse.de"
 export AUTH_URL="$DASHBOARD_NODE:5000/v2.0"
 
-export WAIT_TIMEOUT=8

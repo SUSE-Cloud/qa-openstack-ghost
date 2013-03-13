@@ -63,7 +63,10 @@ class GhostTestCase(TestCase):
 	debug_screenshots = config['DEBUG']
 	ignore_ssl_errors = config['INSECURE']
 
-	log_level = logging.INFO
+	if re.match(r"[A-Z]*", config['LOG_LEVEL']):
+		log_level = eval("logging.%s" % config['LOG_LEVEL'])
+	else:
+		log_level = logging.INFO
 	testcase_name = os.path.basename(sys.argv[0]).replace('.py', '')
 
 	def take_screenshot(self):
