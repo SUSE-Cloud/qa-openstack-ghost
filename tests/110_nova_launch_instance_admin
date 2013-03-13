@@ -1,0 +1,32 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login()
+		self.ghost.click("a[href*='nova']", expect_loading=True)
+		#self.ghost.click("a[href='#tenant_switcher']")
+		#sleep(0.5) # let the user enjoy the dropdown-menu insted clicking a hidden link
+		tenant_id = re.search(r"switch/(\w*)/\">openstack<", self.ghost.content, re.M).group(1)
+		self.ghost.click("a[href*='switch/%s']" % tenant_id, expect_loading=True)
+		assert "<h3>openstack</h3>" in self.ghost.content
+		self.ghost.click("a[href*='instances']", expect_loading=True)
+		if "jeos_00" in self.ghost.content:
+			exit_skipped("jeos_00 already existing")
+		self.ghost.click("a[href*='images']", expect_loading=True)
+		image_id = re.search(r"/([^/]*)/\">jeos1<", self.ghost.content, re.M).group(1)
+		self.ghost.click("a[href*='%s/launch']" % image_id)
+		self.ghost.wait_for_selector("input[type=submit][value='Launch Instance']") # ajax loading
+		self.ghost.fill("form#launch_image_form", {
+			"name": "jeos_00"
+		})
+		self.ghost.fire_on("form#launch_image_form", "submit", expect_loading=True)
+		assert 'Instance "jeos_00" launched.' in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()
