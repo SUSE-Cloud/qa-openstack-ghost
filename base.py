@@ -122,7 +122,7 @@ class GhostTestCase(TestCase):
 
 	def help_login(self, username='admin', password='crowbar'):
 		self.ghost.delete_cookies()
-		self.help_open('')
+		self.help_open('/')
 		assert 'Log In' in self.ghost.content
 		result, resources = self.ghost.fill("form", {
 			"username": username,
@@ -130,3 +130,42 @@ class GhostTestCase(TestCase):
 		})
 		page, resources = self.ghost.fire_on("form", "submit", expect_loading=True)
 		assert 'Logged in as: %s' % username in self.ghost.content
+
+
+# openstack api
+
+def get_api_auth(username='admin', password='crowbar', tenant_name='openstack', tenant_id=None, service_type='image'):
+	from keystoneclient.v2_0 import client as ksclient
+	_ksclient = ksclient.Client(
+		username=username,
+		password=password,
+		tenant_id=tenant_id,
+		tenant_name=tenant_name,
+		auth_url=config['AUTH_URL'],
+		insecure=config['INSECURE'])
+	token = _ksclient.auth_token
+	endpoint = _ksclient.service_catalog.url_for(
+		service_type=service_type,
+		endpoint_type='publicURL')
+
+	# Get rid of trailing '/' if present
+	if endpoint.endswith('/'):
+		endpoint = endpoint[:-1]
+	url_bits = endpoint.split('/')
+	# regex to match 'v1' or 'v2.0' etc
+	if re.match('v\d+\.?\d*', url_bits[-1]):
+		endpoint = '/'.join(url_bits[:-1])
+	return token, endpoint
+
+def get_glance_api(token, endpoint):
+	from glanceclient import Client
+	glance = Client('1', endpoint=endpoint, token=token)
+	return glance
+
+def get_glance_image_properties():
+	if config['VIRT'] == 'xen-hvm':
+		return {'vm_mode': 'hvm'}
+	elif config['VIRT'] == 'xen-pv':
+		return {'vm_mode': 'xen'}
+	else:
+		return {}

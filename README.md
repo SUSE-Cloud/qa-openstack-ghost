@@ -6,6 +6,8 @@ Dependencies
 
 - PyQt or PySide
 - Ghost.py (available via pip)
+- python-keystoneclient (available via pip)
+- python-glanceclient (available via pip)
 
 Running
 -------
