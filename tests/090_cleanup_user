@@ -1,0 +1,24 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login()
+		self.ghost.click("a[href*='users']", expect_loading=True)
+		if not 'test_user' in self.ghost.content:
+			exit_skipped("test_user not existing")
+		user_id = re.search(r">(\w*)</td>[^>]*>test_user<", self.ghost.content, re.M).group(1)
+		self.ghost.click("input[name='object_ids'][value='%s']" % user_id)
+		assert not self.ghost.exists("button#users__action_delete.disabled")
+		self.ghost.click("button#users__action_delete")
+		assert "Confirm Delete Users" in self.ghost.content
+		self.ghost.click("div.modal-footer a.btn-primary", expect_loading=True)
+		assert "Deleted User: test_user" in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()
