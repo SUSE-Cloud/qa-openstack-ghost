@@ -2,6 +2,9 @@
 
 source config
 
+# cleanup old screenshots
+rm -f ./screenshots/*.png
+
 function printlog() {
 	echo "$1" | while read line ; do
 		echo "$line" | grep -q "^++" && continue
