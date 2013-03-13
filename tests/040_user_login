@@ -1,0 +1,14 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login(username='test_user', password='crowbar1')
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()

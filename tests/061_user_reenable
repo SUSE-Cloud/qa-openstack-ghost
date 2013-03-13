@@ -1,0 +1,22 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login()
+		self.ghost.click("a[href*='users']", expect_loading=True)
+		if not 'test_user' in self.ghost.content:
+			exit_skipped("test_user not existing")
+		user_id = re.search(r">(\w*)</td>[^>]*>test_user<", self.ghost.content, re.M).group(1)
+		if not self.ghost.exists("button[value='users__enable__%s']" % user_id):
+			exit_skipped("test_user not disabled")
+		self.ghost.click("button[value='users__enable__%s']" % user_id, expect_loading=True)
+		assert "Successfully enabled users" in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()

@@ -1,0 +1,16 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login(username='test_user', password='crowbar1')
+		self.ghost.click("a[href*='settings']", expect_loading=True)
+		raise AssertionError('No GUI option for user to change his password')
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()

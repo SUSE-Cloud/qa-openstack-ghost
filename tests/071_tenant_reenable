@@ -1,0 +1,26 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login()
+		self.ghost.click("a[href*='projects']", expect_loading=True)
+		tenant_id = re.search(r">(\w*)</td>[^>]*>openstack<", self.ghost.content, re.M).group(1)
+		self.ghost.click("a#tenants__row_%s__action_update" % tenant_id)
+		self.ghost.wait_for_selector("input[type=submit][value='Update Project']") # ajax loading
+		if self.ghost.exists("div.modal input[type=checkbox][name='enabled'][checked='checked']"):
+			exit_skipped("openstack not disabled")
+		self.ghost.fill("div.modal form", {
+			"description": "openstack", # description more or less required field (bnc#808074)
+			"enabled": True
+		})
+		self.ghost.fire_on("div.modal form", "submit", expect_loading=True)
+		assert "openstack was successfully updated" in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()
