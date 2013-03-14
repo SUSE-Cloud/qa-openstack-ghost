@@ -1,0 +1,23 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login(username='crowbar')
+		assert "<h3>openstack</h3>" in self.ghost.content
+		self.ghost.click("a[href*='instances']", expect_loading=True)
+		if "jeos_01" not in self.ghost.content:
+			exit_skipped("jeos_01 not existing")
+		instance_id = re.search(r"/([^/]*)/detail\">jeos_01<", self.ghost.content, re.M).group(1)
+		self.ghost.click("button[value='instances__terminate__%s']" % instance_id)
+		assert "Confirm Terminate Instance" in self.ghost.content
+		self.ghost.click("div.modal-footer a.btn-primary", expect_loading=True)
+		assert 'Terminated Instance: jeos_01' in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()
