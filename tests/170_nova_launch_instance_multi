@@ -24,6 +24,22 @@ class TestCase(GhostTestCase):
 		assert 'Instance "jeos_multi" launched.' in self.ghost.content
 		instance_ids = re.findall(r"/([^/]*)/detail\">jeos_multi<", self.ghost.content, re.M)
 		self.assertEqual(len(instance_ids), config['MULTI_INST_COUNT'])
+
+		# wait for instances to become active
+		instances_active = {}
+		for i in range(0, 30):
+			for instance_id in instance_ids:
+				if self.ghost.exists("tr#instances__row__%s td.status_up" % instance_id):
+					instance_status = self.ghost.evaluate('document.querySelector("tr#instances__row__%s td.status_up").innerHTML;' % instance_id)[0]
+				else:
+					instance_status = None
+				if instance_status == 'Active':
+					instances_active[instance_id] = True
+			if len(instances_active) == config['MULTI_INST_COUNT']:
+				break
+			sleep(2)
+		self.assertEqual(len(instances_active), config['MULTI_INST_COUNT'])
+
 		for instance_id in instance_ids:
 			self.ghost.click("input[name='object_ids'][value='%s']" % instance_id)
 		assert not self.ghost.exists("button#instances__action_terminate.disabled")
@@ -34,7 +50,7 @@ class TestCase(GhostTestCase):
 		for i in range(0, 30):
 			self.ghost.click("a[href*='instances']", expect_loading=True)
 			if not "jeos_multi" in self.ghost.content:
-				return
+				break
 			sleep(2)
 		assert not "jeos_multi" in self.ghost.content
 
