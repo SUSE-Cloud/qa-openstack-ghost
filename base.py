@@ -39,7 +39,7 @@ for line in proc.stdout:
 	config[key] = value.strip()
 	if key in ['INSECURE', 'DEBUG', 'VIEW_DISPLAY']:
 		config[key] = bool(int(config[key]))
-	elif key in ['WAIT_TIMEOUT']:
+	elif key in ['WAIT_TIMEOUT', 'MULTI_INST_COUNT', 'CYCLE_COUNT']:
 		config[key] = int(config[key])
 proc.communicate()
 
