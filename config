@@ -5,8 +5,8 @@ export INSECURE=0
 # kvm / xen-hvm / xen-pv
 export VIRT=kvm
 
-# ERROR / WARNING / INFO / DEBUG
-export LOG_LEVEL=INFO
+# FATAL / ERROR / WARNING / INFO / DEBUG
+export LOG_LEVEL=WARNING
 export DEBUG=0
 export VIEW_DISPLAY=0
 
