@@ -14,7 +14,7 @@ class TestCase(GhostTestCase):
 		glance = get_glance_api(*get_api_auth())
 		image = glance.images.create(
 			name='jeos2',
-			is_public=False,
+			is_public=True,
 			container_format='bare',
 			disk_format='qcow2',
 			properties=get_glance_image_properties(),
