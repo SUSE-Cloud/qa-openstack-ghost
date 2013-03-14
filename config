@@ -1,4 +1,4 @@
-export WAIT_TIMEOUT=8
+export WAIT_TIMEOUT=10
 
 export INSECURE=0
 
