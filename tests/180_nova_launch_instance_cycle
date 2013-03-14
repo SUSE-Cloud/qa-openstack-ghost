@@ -1,0 +1,51 @@
+#!/usr/bin/python2
+
+import unittest
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
+from base import *
+
+class TestCase(GhostTestCase):
+	def do_testcase(self):
+		self.help_login(username='crowbar')
+		assert "<h3>openstack</h3>" in self.ghost.content
+		self.ghost.click("a[href*='instances']", expect_loading=True)
+		if "jeos_cycle" in self.ghost.content:
+			exit_skipped("jeos_cycle already existing")
+
+		for r in range(0, config['CYCLE_COUNT']):
+			self.ghost.click("a[href*='images']", expect_loading=True)
+			image_id = re.search(r"/([^/]*)/\">jeos1<", self.ghost.content, re.M).group(1)
+			self.ghost.click("a[href*='%s/launch']" % image_id)
+			self.ghost.wait_for_selector("input[type=submit][value='Launch Instance']") # ajax loading
+			self.ghost.fill("form#launch_image_form", {
+				"name": "jeos_cycle"
+			})
+			self.ghost.fire_on("form#launch_image_form", "submit", expect_loading=True)
+			assert 'Instance "jeos_cycle" launched.' in self.ghost.content
+			instance_id = re.search(r"/([^/]*)/detail\">jeos_cycle<", self.ghost.content, re.M).group(1)
+			instance_status = None
+			for i in range(0, 30):
+				if self.ghost.exists("tr#instances__row__%s td.status_up" % instance_id):
+					instance_status = self.ghost.evaluate('document.querySelector("tr#instances__row__%s td.status_up").innerHTML;' % instance_id)[0]
+				else:
+					instance_status = None
+				if instance_status == 'Active':
+					break
+				sleep(2)
+			self.assertEqual(instance_status, 'Active')
+
+			self.ghost.click("button[value='instances__terminate__%s']" % instance_id)
+			assert "Confirm Terminate Instance" in self.ghost.content
+			self.ghost.click("div.modal-footer a.btn-primary", expect_loading=True)
+			assert 'Terminated Instance: jeos_cycle' in self.ghost.content
+			for i in range(0, 30):
+				self.ghost.click("a[href*='instances']", expect_loading=True)
+				if not "jeos_cycle" in self.ghost.content:
+					break
+				sleep(2)
+			assert not "jeos_cycle" in self.ghost.content
+
+if __name__ == '__main__':
+	del GhostTestCase
+	unittest.main()
