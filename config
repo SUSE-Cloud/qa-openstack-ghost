@@ -10,6 +10,8 @@ export LOG_LEVEL=WARNING
 export DEBUG=0
 export VIEW_DISPLAY=0
 
+export BREAK_ON_FAIL=0
+
 export MULTI_INST_COUNT=3
 export CYCLE_COUNT=3
 

@@ -71,6 +71,10 @@ for testname in `ls ./tests` ; do
 		echo "$testname" | grep -q "cleanup" && continue
 	fi
 	runtest "$testname"
+	ret=$?
+	if [[ "[1]" =~ "$ret" ]] && [ "$BREAK_ON_FAIL" == "1" ] ; then
+		break
+	fi
 done
 endtime=`date +%s`
 
