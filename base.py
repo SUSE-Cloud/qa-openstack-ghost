@@ -26,6 +26,15 @@ def sleep(sec):
 		system_sleep(0.01)
 		Ghost._app.processEvents()
 
+logger = logging.getLogger('test')
+class Logger(logging.Logger):
+	pass
+log = Logger(logger)
+frm = logging.Formatter("%(levelname)s:test:%(module)s: %(message)s")
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(frm)
+log.addHandler(handler)
+
 # Read config
 
 config = {}
@@ -90,6 +99,7 @@ class GhostTestCase(TestCase):
 			ignore_ssl_errors = GhostTestCase.ignore_ssl_errors,
 			log_level = GhostTestCase.log_level
 		)
+		log.setLevel(GhostTestCase.log_level)
 
 	def tearDown(self):
 		self.do_finally()
@@ -133,7 +143,31 @@ class GhostTestCase(TestCase):
 		})
 		page, resources = self.ghost.fire_on("form", "submit", expect_loading=True)
 		assert 'Logged in as: %s' % username in self.ghost.content
+		log.info("Login succeeded with %s/%s" % (username, password))
 
+	def help_wait_instance_active(self, instance_id, timeout=60):
+		log.info("Waiting for instance %s to become active" % instance_id)
+		timeout /= 2
+		instance_status = None
+		for i in range(0, timeout):
+			if self.ghost.exists("tr#instances__row__%s td.status_up" % instance_id):
+				instance_status = self.ghost.evaluate('document.querySelector("tr#instances__row__%s td.status_up").innerHTML;' % instance_id)[0]
+			else:
+				instance_status = None
+			if instance_status == 'Active':
+				break
+			sleep(2)
+		self.assertEqual(instance_status, 'Active')
+
+	def help_wait_instance_gone(self, instance_id, timeout=60):
+		log.info("Waiting for instance %s to disappear" % instance_id)
+		timeout /= 2
+		for i in range(0, timeout):
+			self.ghost.click("a[href*='instances']", expect_loading=True)
+			if not instance_id in self.ghost.content:
+				break
+			sleep(2)
+		assert not instance_id in self.ghost.content
 
 # openstack api
 

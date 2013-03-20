@@ -24,8 +24,14 @@ class TestCase(GhostTestCase):
 		self.ghost.fill("form#launch_image_form", {
 			"name": "jeos_03"
 		})
-		self.ghost.fire_on("form#launch_image_form", "submit", expect_loading=True)
+		submit_ok = None
+		while not submit_ok:
+			# this submit hangs sometimes
+			submit_ok = self.ghost.fire_on("form#launch_image_form", "submit", expect_loading=True)[0]
 		assert 'Instance "jeos_03" launched.' in self.ghost.content
+
+		instance_id = re.search(r"/([^/]*)/detail\">jeos_03<", self.ghost.content, re.M).group(1)
+		self.help_wait_instance_active(instance_id)
 
 if __name__ == '__main__':
 	del GhostTestCase

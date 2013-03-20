@@ -21,6 +21,9 @@ class TestCase(GhostTestCase):
 		self.ghost.click("div.modal-footer a.btn-primary", expect_loading=True)
 		assert 'Terminated Instance: jeos_00' in self.ghost.content
 
+		self.help_wait_instance_gone(instance_id)
+		assert not "jeos_00" in self.ghost.content
+
 if __name__ == '__main__':
 	del GhostTestCase
 	unittest.main()
