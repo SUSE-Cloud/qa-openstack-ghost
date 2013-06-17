@@ -9,9 +9,9 @@ class TestCase(GhostTestCase):
 	def do_testcase(self):
 		self.help_login()
 		self.ghost.click("a[href*='projects']", expect_loading=True)
-		tenant_id = re.search(r">(\w*)</td>[^>]*>openstack<", self.ghost.content, re.M).group(1)
+		tenant_id = re.search(r">openstack</td>[^>]*>[^<]*</td>[^>]*>(\w*)<", self.ghost.content, re.M).group(1)
 		self.ghost.click("a#tenants__row_%s__action_update" % tenant_id)
-		self.ghost.wait_for_selector("input[type=submit][value='Update Project']") # ajax loading
+		self.ghost.wait_for_selector("input[type=submit][value='Save']") # ajax loading
 		if self.ghost.exists("div.modal input[type=checkbox][name='enabled'][checked='checked']"):
 			exit_skipped("openstack not disabled")
 		self.ghost.fill("div.modal form", {
@@ -19,7 +19,7 @@ class TestCase(GhostTestCase):
 			"enabled": True
 		})
 		self.ghost.fire_on("div.modal form", "submit", expect_loading=True)
-		assert "openstack was successfully updated" in self.ghost.content
+		assert 'Modified project "openstack"' in self.ghost.content
 
 if __name__ == '__main__':
 	del GhostTestCase

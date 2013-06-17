@@ -9,7 +9,7 @@ class TestCase(GhostTestCase):
 	def do_testcase(self):
 		with self.assertRaises(AssertionError):
 			self.help_login(username='test_user', password='crowbar1')
-		assert "You are not authorized for any available projects" in self.ghost.content
+		assert "Unable to authenticate to any available projects." in self.ghost.content
 
 if __name__ == '__main__':
 	del GhostTestCase

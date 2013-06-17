@@ -11,11 +11,12 @@ class TestCase(GhostTestCase):
 		self.ghost.click("a[href*='users']", expect_loading=True)
 		if not 'test_user' in self.ghost.content:
 			exit_skipped("test_user not existing")
-		user_id = re.search(r">(\w*)</td>[^>]*>test_user<", self.ghost.content, re.M).group(1)
-		if not self.ghost.exists("button[value='users__enable__%s']" % user_id):
+		user_id, user_enabled = re.search(r">test_user</td>.*>(\w*)</td>[^>]*>(True|False)<", self.ghost.content, re.M).groups()
+		user_enabled = (user_enabled == 'True')
+		if user_enabled:
 			exit_skipped("test_user not disabled")
 		self.ghost.click("button[value='users__enable__%s']" % user_id, expect_loading=True)
-		assert "Successfully enabled users" in self.ghost.content
+		assert "Enabled User: test_user" in self.ghost.content
 
 if __name__ == '__main__':
 	del GhostTestCase

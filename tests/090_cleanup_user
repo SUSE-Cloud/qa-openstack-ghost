@@ -11,7 +11,7 @@ class TestCase(GhostTestCase):
 		self.ghost.click("a[href*='users']", expect_loading=True)
 		if not 'test_user' in self.ghost.content:
 			exit_skipped("test_user not existing")
-		user_id = re.search(r">(\w*)</td>[^>]*>test_user<", self.ghost.content, re.M).group(1)
+		user_id, user_enabled = re.search(r">test_user</td>.*>(\w*)</td>[^>]*>(True|False)<", self.ghost.content, re.M).groups()
 		self.ghost.click("input[name='object_ids'][value='%s']" % user_id)
 		assert not self.ghost.exists("button#users__action_delete.disabled")
 		self.ghost.click("button#users__action_delete")
