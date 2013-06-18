@@ -145,6 +145,12 @@ class GhostTestCase(TestCase):
 		assert 'Logged in as: %s' % username in self.ghost.content
 		log.info("Login succeeded with %s/%s" % (username, password))
 
+	def help_select_project(self, project='openstack'):
+		if not "<h3>openstack</h3>" in self.ghost.content:
+			tenant_id = re.search(r"switch/(\w*)/[^\"]*\">openstack<", self.ghost.content, re.M).group(1)
+			self.ghost.click("a[href*='switch/%s']" % tenant_id, expect_loading=True)
+		assert "<h3>openstack</h3>" in self.ghost.content
+
 	def help_wait_instance_active(self, instance_id, timeout=60):
 		log.info("Waiting for instance %s to become active" % instance_id)
 		timeout /= 2
