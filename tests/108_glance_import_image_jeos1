@@ -6,20 +6,32 @@ sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '..'))
 from base import *
 
 class TestCase(GhostTestCase):
+	GhostTestCase.wait_timeout *= 7
 	def do_testcase(self):
 		self.help_login()
 		self.ghost.click("a[href*='images']", expect_loading=True)
 		if "jeos1" in self.ghost.content:
 			exit_skipped("jeos1 already existing")
-		glance = get_glance_api(*get_api_auth())
-		image = glance.images.create(
-			name='jeos1',
-			is_public=True,
-			container_format='bare',
-			disk_format='qcow2',
-			properties=get_glance_image_properties(),
-			copy_from='http://clouddata.cloud.suse.de/images/jeos-64.qcow2'
-		)
+		self.ghost.click("a#images__action_create")
+		self.ghost.wait_for_selector("input[type=submit][value='Create Image']") # ajax loading
+		sleep(0.5)
+
+		# Proxy image insted of remote upload (workaround bnc#825033)
+		import tempfile
+		import urllib
+		tmp_image = tempfile.NamedTemporaryFile(prefix='ghost_')
+		urllib.urlretrieve("http://clouddata.cloud.suse.de/images/jeos-64.qcow2", tmp_image.name)
+
+		self.ghost.fill("form[action*='create']", {
+			"name": "jeos1",
+			"disk_format": "qcow2",
+			"is_public": True,
+			"image_file": tmp_image.name,
+			#"copy_from": "http://clouddata.cloud.suse.de/images/jeos-64.qcow2",
+		})
+		sleep(0.5)
+
+		self.ghost.fire_on("form[action*='create']", "submit", expect_loading=True)
 		self.ghost.click("a[href*='images']", expect_loading=True)
 		assert "jeos1" in self.ghost.content
 
