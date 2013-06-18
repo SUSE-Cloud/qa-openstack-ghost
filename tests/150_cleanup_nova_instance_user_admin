@@ -8,18 +8,16 @@ from base import *
 class TestCase(GhostTestCase):
 	def do_testcase(self):
 		self.help_login()
-		self.ghost.click("a[href*='nova']", expect_loading=True)
-		tenant_id = re.search(r"switch/(\w*)/\">openstack<", self.ghost.content, re.M).group(1)
-		self.ghost.click("a[href*='switch/%s']" % tenant_id, expect_loading=True)
-		assert "<h3>openstack</h3>" in self.ghost.content
+		self.ghost.click("a[href*='project/']", expect_loading=True)
+		self.help_select_project('openstack')
 		self.ghost.click("a[href*='instances']", expect_loading=True)
 		if "jeos_02" not in self.ghost.content:
 			exit_skipped("jeos_02 not existing")
-		instance_id = re.search(r"/([^/]*)/detail\">jeos_02<", self.ghost.content, re.M).group(1)
+		instance_id = re.search(r"/([^/]*)/\"[^>]*>jeos_02<", self.ghost.content, re.M).group(1)
 		self.ghost.click("button[value='instances__terminate__%s']" % instance_id)
 		assert "Confirm Terminate Instance" in self.ghost.content
 		self.ghost.click("div.modal-footer a.btn-primary", expect_loading=True)
-		assert 'Terminated Instance: jeos_02' in self.ghost.content
+		assert 'Scheduled termination of Instance: jeos_02' in self.ghost.content
 
 		self.help_wait_instance_gone(instance_id)
 		assert not "jeos_02" in self.ghost.content
