@@ -17,17 +17,20 @@ class TestCase(GhostTestCase):
 
 		for image_name in image_names:
 			self.ghost.click("a[href*='images']", expect_loading=True)
-			image_id = re.search(r"/([^/]*)/\">%s<" % image_name, self.ghost.content, re.M).group(1)
-			self.ghost.click("a[href*='%s/launch']" % image_id)
-			self.ghost.wait_for_selector("input[type=submit][value='Launch Instance']") # ajax loading
-			self.ghost.fill("form#launch_image_form", {
+			image_id = re.search(r"/([^/]*)/\"[^>]*>%s<" % image_name, self.ghost.content, re.M).group(1)
+			self.ghost.click("a#images__row_%s__action_launch_image" % image_id)
+			self.ghost.wait_for_selector("input[type=submit][value='Launch']") # ajax loading
+			fixed_network_id = re.search(r">fixed<em [^>]*>\(([\w-]*)\)<", self.ghost.content, re.M).group(1)
+			self.ghost.fill("form[action*='launch']", {
 				"name": "jeos_multiimg"
 			})
-			self.ghost.fire_on("form#launch_image_form", "submit", expect_loading=True)
-			assert 'Instance "jeos_multiimg" launched.' in self.ghost.content
+			self.ghost.click("a[href*='launch_instance__setnetworkaction']")
+			self.ghost.click("li[name='%s'] a.btn" % fixed_network_id)
+			self.ghost.fire_on("form[action*='launch']", "submit", expect_loading=True)[0]
+			assert 'Launched instance named "jeos_multiimg".' in self.ghost.content
 
 		# wait for instances to become active
-		instance_ids = re.findall(r"/([^/]*)/detail\">jeos_multiimg<", self.ghost.content, re.M)
+		instance_ids = re.findall(r"/([^/]*)/\"[^>]*>jeos_multiimg<", self.ghost.content, re.M)
 		self.assertEqual(len(instance_ids), len(image_names))
 		instances_active = {}
 		for i in range(0, 30):
@@ -49,7 +52,7 @@ class TestCase(GhostTestCase):
 		self.ghost.click("button#instances__action_terminate")
 		assert "Confirm Terminate Instances" in self.ghost.content
 		self.ghost.click("div.modal-footer a.btn-primary", expect_loading=True)
-		assert "Terminated Instances: %s" % ', '.join(["jeos_multiimg"] * len(image_names)) in self.ghost.content
+		assert "Scheduled termination of Instances: %s" % ', '.join(["jeos_multiimg"] * len(image_names)) in self.ghost.content
 		for i in range(0, 30):
 			self.ghost.click("a[href*='instances']", expect_loading=True)
 			if not "jeos_multiimg" in self.ghost.content:
