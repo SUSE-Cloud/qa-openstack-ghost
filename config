@@ -16,6 +16,6 @@ export MULTI_INST_COUNT=3
 export CYCLE_COUNT=3
 
 # dashboard url WITHOUT trailing slash
-export DASHBOARD_NODE="http://dashboard.cloud.qa.suse.de"
+export DASHBOARD_NODE="http://public.dashboard.cloud.qa.suse.de"
 export AUTH_URL="$DASHBOARD_NODE:5000/v2.0"
 
